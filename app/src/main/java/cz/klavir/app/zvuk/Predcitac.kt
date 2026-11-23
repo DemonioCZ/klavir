@@ -9,7 +9,7 @@ import java.util.Locale
  * Používá hlas zabudovaný v Androidu; pokud chybí český hlas, [dostupny] je false.
  */
 class Predcitac(context: Context) {
-    private var pripraven = false
+    var pripraven = false; private set
     var dostupny = false; private set
     private var cekajici: String? = null
 

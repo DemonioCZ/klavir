@@ -419,7 +419,7 @@ fun ObrazovkaProRodice(stav: AppStav) {
                 ) {
                     Switch(checked = p.predcitatAutomaticky, onCheckedChange = { stav.upravProfil(p.copy(predcitatAutomaticky = it)) })
                 }
-                if (!stav.predcitac.dostupny) {
+                if (stav.predcitac.pripraven && !stav.predcitac.dostupny) {
                     Text(
                         "Český hlas pro předčítání není v tabletu nainstalovaný. Doinstalujete ho v Nastavení Androidu → Přístupnost → Převod textu na řeč.",
                         style = styl(16, tucne = false, barva = Barvy.oranzova),
