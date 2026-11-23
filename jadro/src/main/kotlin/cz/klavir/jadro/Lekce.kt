@@ -127,12 +127,12 @@ object Lekce1az5 {
 
     val notyVOsnove = Lekce(
         "noty_osnova", 6, "Noty v osnově", "📖",
-        "Teď už bez písmenek na klávesách. Zvládneš to!",
+        "Poznej notu podle toho, kde sedí v osnově. Zvládneš to!",
         listOf(Noty.G4, Noty.E4, Noty.A4, Noty.D4, Noty.F4, Noty.C4, Noty.A4, Noty.G4, Noty.E4, Noty.D4, Noty.F4, Noty.C4).map { ton ->
             Ukol(
                 cil = ton, prst = null,
                 text = "Která je to nota? Zahraj ji",
-                ukazNotu = true, ukazNazvyKlaves = false, zvyraznitKlavesu = false,
+                ukazNotu = true, ukazNazvyKlaves = true, zvyraznitKlavesu = false,
                 napoveda = popisPolohy(ton),
             )
         },

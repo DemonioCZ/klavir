@@ -58,9 +58,10 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
     val rozsah = rememberCoroutineScope()
     val ukol = lekce.ukoly[index.coerceAtMost(lekce.ukoly.lastIndex)]
 
-    // Při opakování stejné noty se zadání čte jen poprvé, pak až když se nota změní.
+    // Zadání se čte jen tehdy, když se změnila nota i text (stejná nota ani stále stejná věta se neopakují).
     LaunchedEffect(id, index) {
-        if (index == 0 || lekce.ukoly[index - 1].cil != ukol.cil) stav.prectiAutomaticky(ukol.text)
+        val pred = lekce.ukoly.getOrNull(index - 1)
+        if (pred == null || pred.cil != ukol.cil && pred.text != ukol.text) stav.prectiAutomaticky(ukol.text)
     }
 
     val vstup = napojVstup(stav) { midi, zMikrofonu ->
@@ -129,7 +130,8 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                val napoveda = if (ukol.ukazNazvyKlaves || chybaVUkolu) ukol.napoveda else ""
+                // u lekcí s notou v osnově se nápověda ukáže až po chybě
+                val napoveda = if (chybaVUkolu || ukol.ukazNazvyKlaves && !ukol.ukazNotu) ukol.napoveda else ""
                 ZadaniKarta(
                     nadpis = "Úkol ${index + 1} z ${lekce.ukoly.size}",
                     text = ukol.text,
