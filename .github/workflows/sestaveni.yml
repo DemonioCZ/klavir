@@ -1,0 +1,50 @@
+# Sestavení aplikace: testy jádra, APK a vydání (Release) pro aktualizaci z tabletu.
+name: Sestavení APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sestaveni:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Testy jádra (noty, písničky, rozpoznání tónu)
+        run: ./gradlew :jadro:test --console=plain
+
+      - name: Sestavení APK
+        run: ./gradlew :app:assembleRelease -PcisloSestaveni=${{ github.run_number }} --console=plain
+
+      - name: Přejmenování APK
+        run: cp app/build/outputs/apk/release/app-release.apk klavirni-samouk-${{ github.run_number }}.apk
+
+      - name: Uložení APK k běhu
+        uses: actions/upload-artifact@v4
+        with:
+          name: klavirni-samouk-${{ github.run_number }}
+          path: klavirni-samouk-${{ github.run_number }}.apk
+
+      # Vydání se vytváří jen z hlavní větve; aplikace si ho najde v Pro rodiče → Aktualizace.
+      - name: Vydání nové verze
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Verze 0.1.${{ github.run_number }}
+          body: ${{ github.event.head_commit.message }}
+          files: klavirni-samouk-${{ github.run_number }}.apk
+          make_latest: true

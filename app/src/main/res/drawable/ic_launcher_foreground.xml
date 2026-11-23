@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ikona aplikace: sovička nad klaviaturou (vlastní kresba) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- ouška -->
+    <path android:fillColor="#FFFFFF" android:pathData="M34,36 L40,22 L48,34Z M74,36 L68,22 L60,34Z" />
+    <!-- tělo -->
+    <path android:fillColor="#FFFFFF" android:pathData="M54,30 C70,30 78,42 78,56 C78,70 68,78 54,78 C40,78 30,70 30,56 C30,42 38,30 54,30Z" />
+    <!-- oči -->
+    <path android:fillColor="#2B2A4C" android:pathData="M45,48 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path android:fillColor="#2B2A4C" android:pathData="M63,48 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <!-- zobáček -->
+    <path android:fillColor="#FFC52E" android:pathData="M50,56 L58,56 L54,62Z" />
+    <!-- klaviatura -->
+    <path android:fillColor="#2B2A4C" android:pathData="M34,66 L74,66 L74,80 L34,80Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M35,67 L41,67 L41,79 L35,79Z M42,67 L48,67 L48,79 L42,79Z M49,67 L55,67 L55,79 L49,79Z M56,67 L62,67 L62,79 L56,79Z M63,67 L69,67 L69,79 L63,79Z M70,67 L73,67 L73,79 L70,79Z" />
+    <path android:fillColor="#2B2A4C" android:pathData="M39.5,67 L43.5,67 L43.5,74 L39.5,74Z M46.5,67 L50.5,67 L50.5,74 L46.5,74Z M60.5,67 L64.5,67 L64.5,74 L60.5,74Z M67.5,67 L71.5,67 L71.5,74 L67.5,74Z" />
+</vector>

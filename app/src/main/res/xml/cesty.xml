@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Složka se staženou aktualizací, kterou předáme instalátoru Androidu. -->
+<paths>
+    <cache-path name="aktualizace" path="aktualizace/" />
+</paths>
