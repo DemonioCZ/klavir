@@ -315,7 +315,8 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
             Pilulka("🎵 +${h.body}")
         }
         Postup(stavy.count { it == StavNoty.SPRAVNE || it == StavNoty.S_CHYBOU }.toFloat() / noty.size, Modifier.fillMaxWidth().padding(top = 8.dp))
-        Box(Modifier.fillMaxWidth().height(290.dp).padding(top = 12.dp).karta()) {
+        // osnova dostane menší část výšky, klávesy větší
+        Box(Modifier.fillMaxWidth().weight(0.4f).padding(top = 12.dp).karta()) {
             OsnovaPisnicky(noty, stavy, index, Modifier.fillMaxSize())
             odpocet?.let {
                 Box(Modifier.align(Alignment.Center).clip(RoundedCornerShape(30.dp)).background(Barvy.modra).padding(horizontal = 40.dp, vertical = 6.dp)) {
@@ -334,7 +335,7 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
             spatnaKlavesa?.let { put(it, OznaceniKlavesy(Barvy.oranzovaSvetla, obrys = Barvy.oranzova)) }
         }
         // klávesy vyplní celé zbývající místo pod osnovou
-        Klaviatura(Modifier.weight(1f).padding(top = 12.dp), vyska = Dp.Unspecified, oznaceni = oznaceni, onKlavesa = vstup)
+        Klaviatura(Modifier.weight(0.6f).padding(top = 12.dp), vyska = Dp.Unspecified, oznaceni = oznaceni, onKlavesa = vstup)
     }
 }
 

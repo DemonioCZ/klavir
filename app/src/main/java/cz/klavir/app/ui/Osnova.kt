@@ -117,7 +117,9 @@ fun OsnovaPisnicky(
 ) {
     val mereni = rememberTextMeasurer()
     Canvas(modifier) {
-        val mezera = 20.dp.toPx()
+        // Při nízké kartě se osnova i popisky úměrně zmenší.
+        val mezera = minOf(20.dp.toPx(), size.height / 13f)
+        val k = mezera / 20.dp.toPx()
         val r = Osnova.Rozmery(mezera, size.height * 0.55f)
         val startX = 150.dp.toPx()
         val krokDoby = 62.dp.toPx()
@@ -154,8 +156,8 @@ fun OsnovaPisnicky(
                     if (stav == StavNoty.AKTUALNI) {
                         drawRoundRect(
                             barvaPrstu.copy(alpha = 0.13f),
-                            Offset(px - krokDoby * 0.45f, r.horniLinka - 62.dp.toPx()),
-                            Size(krokDoby * 0.9f, r.spodniLinka - r.horniLinka + 128.dp.toPx()),
+                            Offset(px - krokDoby * 0.45f, r.horniLinka - 62.dp.toPx() * k),
+                            Size(krokDoby * 0.9f, r.spodniLinka - r.horniLinka + 128.dp.toPx() * k),
                             androidx.compose.ui.geometry.CornerRadius(16.dp.toPx()),
                         )
                     }
@@ -167,21 +169,21 @@ fun OsnovaPisnicky(
                     }
                     nota(r, px, n.midi, n.doby, barva)
                     // číslo prstu nad osnovou
-                    val stredPrstu = Offset(px, r.horniLinka - 34.dp.toPx())
+                    val stredPrstu = Offset(px, r.horniLinka - 34.dp.toPx() * k)
                     val alfa = if (stav == StavNoty.SPRAVNE || stav == StavNoty.S_CHYBOU) 0.35f else 1f
-                    drawCircle(barvaPrstu.copy(alpha = alfa), 15.dp.toPx(), stredPrstu)
+                    drawCircle(barvaPrstu.copy(alpha = alfa), 15.dp.toPx() * k, stredPrstu)
                     popisek(mereni, "${n.prst}", stredPrstu, Color.White, 18)
                     if (n.posun != null) {
-                        popisek(mereni, "↔", Offset(px, r.horniLinka - 62.dp.toPx()), Barvy.oranzova, 22)
+                        popisek(mereni, "↔", Offset(px, r.horniLinka - 62.dp.toPx() * k), Barvy.oranzova, 22)
                     }
                     // slabika
                     if (n.slabika.isNotEmpty()) {
                         popisek(
-                            mereni, n.slabika, Offset(px, r.spodniLinka + 48.dp.toPx()),
+                            mereni, n.slabika, Offset(px, r.spodniLinka + 48.dp.toPx() * k),
                             if (stav == StavNoty.AKTUALNI) barvaPrstu else Barvy.text, 22,
                         )
                     }
-                    if (stav == StavNoty.SPRAVNE) popisek(mereni, "✓", Offset(px, r.spodniLinka + 76.dp.toPx()), Barvy.zelena, 16)
+                    if (stav == StavNoty.SPRAVNE) popisek(mereni, "✓", Offset(px, r.spodniLinka + 76.dp.toPx() * k), Barvy.zelena, 16)
                 }
             }
         }
