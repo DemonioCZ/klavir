@@ -36,6 +36,17 @@ jobs:
           name: nahledy-obrazovek
           path: app/src/test/snapshots/images/
 
+      # Náhledy se ukládají i do samostatné větve „nahledy“, aby šly prohlížet přímo na GitHubu.
+      - name: Zveřejnění náhledů do větve nahledy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p /tmp/nahledy && cp app/src/test/snapshots/images/*.png /tmp/nahledy/
+          cd /tmp/nahledy
+          git init -q -b nahledy
+          git add .
+          git -c user.name="GitHub Actions" -c user.email="actions@github.com" commit -qm "Náhledy obrazovek pro ${GITHUB_SHA}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" nahledy
+
       - name: Sestavení APK
         run: ./gradlew :app:assembleRelease -PcisloSestaveni=${{ github.run_number }} --console=plain
 
