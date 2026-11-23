@@ -85,6 +85,19 @@ class HudbaTest {
     }
 
     @Test
+    fun lekceJsouPoRadeAOpakujiNoty() {
+        Lekce1az5.vsechny.forEachIndexed { i, l ->
+            assertEquals(i + 1, l.cislo, "Číslo lekce ${l.nazev}")
+            assertTrue(l.ukoly.isNotEmpty())
+            l.notyVOsnove.let { noty -> l.ukoly.forEach { u -> assertTrue(noty.isEmpty() || u.cil in noty) } }
+        }
+        // V lekcích C D E a F G začíná každá nota aspoň třemi opakováními za sebou.
+        for (l in listOf(Lekce1az5.cde, Lekce1az5.fg)) {
+            assertEquals(List(3) { l.ukoly[0].cil }, l.ukoly.take(3).map { it.cil })
+        }
+    }
+
+    @Test
     fun bodyASerie() {
         val h = Hodnoceni()
         assertEquals(10, h.spravne())

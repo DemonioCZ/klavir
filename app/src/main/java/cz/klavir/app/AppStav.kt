@@ -39,7 +39,7 @@ sealed interface Obrazovka {
 class AppStav(context: Context) {
     val uloziste = UlozisteProfilu(context)
     val mikrofon = Mikrofon()
-    val syntezator = Syntezator().apply { pripravit(Noty.C4..Noty.C4 + 24) }
+    val syntezator = Syntezator().apply { pripravit(Noty.C4 - 12..Noty.C4 + 12) }
     val predcitac = Predcitac(context)
     private val nastaveni = context.getSharedPreferences("nastaveni", Context.MODE_PRIVATE)
 

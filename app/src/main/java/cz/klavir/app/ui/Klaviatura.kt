@@ -30,14 +30,14 @@ data class OznaceniKlavesy(
 )
 
 /**
- * Klaviatura na obrazovce (výchozí rozsah C4–C6). Ťuknutím na klávesu se volá [onKlavesa].
+ * Klaviatura na obrazovce (výchozí rozsah c–c2, střední C = c1 je uprostřed). Ťuknutím na klávesu se volá [onKlavesa].
  * Nejdřív se testují černé klávesy, protože leží nad bílými.
  */
 @Composable
 fun Klaviatura(
     modifier: Modifier = Modifier,
-    od: Int = Noty.C4,
-    po: Int = Noty.C4 + 24,
+    od: Int = Noty.C4 - 12,
+    po: Int = Noty.C4 + 12,
     vyska: Dp = 250.dp,
     oznaceni: Map<Int, OznaceniKlavesy> = emptyMap(),
     ukazNazvy: Boolean = true,
@@ -77,6 +77,10 @@ fun Klaviatura(
             if (ukazNazvy) {
                 popisek(mereni, Noty.nazev(m), Offset(poz.x + vel.width / 2, poz.y + vel.height - 26.dp.toPx()),
                     if (o?.tmavyPopis == true) Color.White else Color(0xFFB8B4C8), 22)
+            }
+            if (m == Noty.C4) {
+                // Střední C (c1) – orientační bod uprostřed klaviatury.
+                drawCircle(Barvy.zluta, 6.dp.toPx(), Offset(poz.x + vel.width / 2, poz.y + vel.height * 0.66f))
             }
             o?.prst?.let { prst ->
                 val stred = Offset(poz.x + vel.width / 2, poz.y + vel.height - 70.dp.toPx())

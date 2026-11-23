@@ -191,3 +191,38 @@ private inline fun DrawScope.clipRectSafe(odX: Float, blok: DrawScope.() -> Unit
     blok()
     drawContext.canvas.restore()
 }
+
+/**
+ * Osnova s několika notami vedle sebe (např. C, D, E). Nota, kterou má žák zahrát,
+ * svítí barvou, pod každou notou je její písmeno.
+ */
+@Composable
+fun OsnovaVyberNot(noty: List<Int>, cil: Int, barvaCile: Color, modifier: Modifier = Modifier) {
+    val mereni = rememberTextMeasurer()
+    Canvas(modifier) {
+        val mezera = size.height / 12f
+        val r = Osnova.Rozmery(mezera, size.height * 0.62f)
+        val odX = size.width * 0.34f
+        val krok = (size.width * 0.92f - odX) / maxOf(noty.size, 1)
+        with(Osnova) {
+            linkyAKlic(r, mereni)
+            noty.forEachIndexed { i, m ->
+                val x = odX + krok * (i + 0.5f)
+                val jeCil = m == cil
+                if (jeCil) {
+                    drawRoundRect(
+                        barvaCile.copy(alpha = 0.15f),
+                        Offset(x - krok * 0.42f, r.horniLinka - mezera * 1.5f),
+                        Size(krok * 0.84f, r.spodniLinka - r.horniLinka + mezera * 6f),
+                        androidx.compose.ui.geometry.CornerRadius(18.dp.toPx()),
+                    )
+                }
+                nota(r, x, m, 1f, if (jeCil) barvaCile else Barvy.text.copy(alpha = 0.45f))
+                popisek(
+                    mereni, Noty.nazev(m), Offset(x, r.spodniLinka + mezera * 2.8f),
+                    if (jeCil) barvaCile else Barvy.tlumeny, if (jeCil) 40 else 28,
+                )
+            }
+        }
+    }
+}

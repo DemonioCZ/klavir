@@ -321,6 +321,7 @@ fun ObrazovkaVysledek(stav: AppStav, v: Obrazovka.Vysledek) {
                 }
             }
             Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Tlacitko("🏠", hlavni = false) { stav.jdiNaHlavni(Obrazovka.Domu) }
                 Tlacitko("↻ Znovu", hlavni = false) { stav.jdiNaHlavni(v.znovu) }
                 if (v.dalsi != null) Tlacitko("Další ›") { stav.jdiNaHlavni(v.dalsi) }
                 else Tlacitko("Domů") { stav.jdiNaHlavni(Obrazovka.Domu) }

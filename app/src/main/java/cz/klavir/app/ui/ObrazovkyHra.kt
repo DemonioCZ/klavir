@@ -100,6 +100,10 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
             // obrázek vlevo
             Box(Modifier.width(520.dp).fillMaxHeight().karta(), contentAlignment = Alignment.Center) {
                 when {
+                    lekce.notyVOsnove.isNotEmpty() -> {
+                        val barva = if (odezva?.dobre == true) Barvy.zelena else Barvy.prst(ukol.prst ?: 3)
+                        OsnovaVyberNot(lekce.notyVOsnove, ukol.cil, barva, Modifier.fillMaxSize().padding(12.dp))
+                    }
                     ukol.ukazNotu -> {
                         val barva = if (odezva?.dobre == true) Barvy.zelena else Barvy.text
                         OsnovaJednaNota(ukol.cil, barva, Modifier.fillMaxSize().padding(12.dp))
@@ -107,7 +111,7 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
                             Text(Noty.nazev(ukol.cil), style = styl(48, barva = Barvy.zelena), modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp))
                         }
                     }
-                    ukol.prst != null && lekce.id != "cde" -> Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    ukol.prst != null -> Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Ruka(prava = false, aktivniPrst = null, velikost = 190.dp)
                             Text("levá ruka", style = styl(18, tucne = false, barva = Barvy.tlumeny))
