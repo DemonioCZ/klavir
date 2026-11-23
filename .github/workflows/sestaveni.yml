@@ -4,6 +4,8 @@ name: Sestavení APK
 on:
   push:
     branches: [main]
+    # Změna jen v dokumentaci nepotřebuje nové APK.
+    paths-ignore: ['**.md']
   pull_request:
   workflow_dispatch:
 
