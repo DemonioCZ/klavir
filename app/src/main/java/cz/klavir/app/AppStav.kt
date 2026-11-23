@@ -62,7 +62,7 @@ class AppStav(context: Context) {
 
     fun prepniVstup(piano: Boolean) {
         hrajeNaPiano = piano
-        nastaveni.edit().putBoolean("piano", piano).apply()
+        nastaveni.edit()?.putBoolean("piano", piano)?.apply()
     }
 
     fun jdi(kam: Obrazovka) {

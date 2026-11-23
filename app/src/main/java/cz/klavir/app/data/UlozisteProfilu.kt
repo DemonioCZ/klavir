@@ -26,12 +26,14 @@ class UlozisteProfilu(context: Context) {
     fun uloz(profily: List<Profil>) {
         val pole = JSONArray()
         profily.forEach { pole.put(doJson(it)) }
-        prefs.edit().putString("seznam", pole.toString()).apply()
+        prefs.edit()?.putString("seznam", pole.toString())?.apply()
     }
 
     var posledniProfil: String?
         get() = prefs.getString("posledni", null)
-        set(v) = prefs.edit().putString("posledni", v).apply()
+        set(v) {
+            prefs.edit()?.putString("posledni", v)?.apply()
+        }
 
     fun novy(jmeno: String, zvire: String) = Profil(UUID.randomUUID().toString(), jmeno.trim(), zvire)
 

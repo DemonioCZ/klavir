@@ -55,6 +55,14 @@ android {
     }
 }
 
+// V logu testů chceme celý výpis chyby.
+tasks.withType<Test>().configureEach {
+    testLogging {
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStackTraces = true
+    }
+}
+
 dependencies {
     implementation(project(":jadro"))
 
