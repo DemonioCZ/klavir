@@ -30,6 +30,7 @@ jobs:
         run: ./gradlew :app:recordPaparazziRelease --console=plain
 
       - name: Uložení náhledů
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nahledy-obrazovek

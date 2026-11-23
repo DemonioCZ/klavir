@@ -97,12 +97,13 @@ fun KlavirApp(stav: AppStav, pozadatOMikrofon: () -> Unit, onKonec: () -> Unit) 
 
 /** Číslo a název nainstalované verze (bez generované třídy BuildConfig). */
 object BuildConfigInfo {
-    private fun info(context: Context) = context.packageManager.getPackageInfo(context.packageName, 0)
+    private fun info(context: Context) =
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
 
     fun cisloVerze(context: Context): Int {
-        val i = info(context)
+        val i = info(context) ?: return 0
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) i.longVersionCode.toInt() else @Suppress("DEPRECATION") i.versionCode
     }
 
-    fun nazevVerze(context: Context): String = "${info(context).versionName} (sestavení ${cisloVerze(context)})"
+    fun nazevVerze(context: Context): String = "${info(context)?.versionName ?: "?"} (sestavení ${cisloVerze(context)})"
 }
