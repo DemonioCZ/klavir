@@ -224,7 +224,7 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
     val textUkolu = "Teď zahraj ${Noty.nazev(nota.midi)} ${Lekce1az5.prstemSlovy(nota.prst)} (${nota.prst})"
     LaunchedEffect(id, index, kolo, rezim) {
         val zmena = index == 0 || noty[index - 1].midi != nota.midi || nota.posun != null
-        if (rezim == Rezim.CEKAM && ukazka == null && zmena) stav.prectiAutomaticky(textUkolu + (nota.posun?.let { ". $it" } ?: ""))
+        if (rezim == Rezim.CEKAM && ukazka == null && zmena) stav.prectiAutomaticky(textUkolu + (nota.posun?.let { ". $it" } ?: ""), pridat = true)
     }
 
     val vstup = napojVstup(stav) { midi, zMikrofonu ->
@@ -236,6 +236,8 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
                     stavy[index] = if (chybaVNote) StavNoty.S_CHYBOU else StavNoty.SPRAVNE
                     spatnaKlavesa = null
                     chybaVNote = false
+                    // po zahrané notě aplikace „zazpívá“ slabiku textu písničky
+                    if (nota.slabika.isNotBlank()) stav.precti(nota.slabika.trimEnd('-', '–'))
                     if (index + 1 >= noty.size) dokonci() else index++
                 } else {
                     if (!chybaVNote) h.chyba()

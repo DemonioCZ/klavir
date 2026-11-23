@@ -25,7 +25,10 @@ fun napojVstup(stav: AppStav, onTon: (midi: Int, zMikrofonu: Boolean) -> Unit): 
         onDispose { stav.mikrofon.zastav() }
     }
     LaunchedEffect(poslouchat) {
-        if (poslouchat) stav.mikrofon.udery.collect { aktualniOnTon(it, true) }
+        if (poslouchat) stav.mikrofon.udery.collect {
+            // hlas předčítání by mikrofon mohl slyšet jako tón
+            if (!stav.predcitac.mluvi) aktualniOnTon(it, true)
+        }
     }
     return { midi ->
         // Tón z reproduktoru tabletu by mikrofon slyšel jako zahraný – chvíli ho ignorujeme.

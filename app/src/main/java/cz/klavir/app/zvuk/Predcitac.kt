@@ -2,6 +2,7 @@ package cz.klavir.app.zvuk
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
 
 /**
@@ -14,6 +15,11 @@ class Predcitac(context: Context) {
     private var cekajici: String? = null
 
     private var tts: TextToSpeech? = null
+
+    /** Právě mluví – mikrofon mezitím nehlásí údery, aby hlas nepovažoval za tón z piana. */
+    @Volatile
+    var mluvi = false
+        private set
 
     init {
         tts = try {
@@ -29,13 +35,21 @@ class Predcitac(context: Context) {
             val vysledek = t.setLanguage(Locale("cs", "CZ"))
             dostupny = vysledek != TextToSpeech.LANG_MISSING_DATA && vysledek != TextToSpeech.LANG_NOT_SUPPORTED
             t.setSpeechRate(0.9f)
+            t.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(id: String?) { mluvi = true }
+                override fun onDone(id: String?) { mluvi = false }
+                @Deprecated("Deprecated in Java")
+                override fun onError(id: String?) { mluvi = false }
+                override fun onStop(id: String?, interrupted: Boolean) { mluvi = false }
+            })
             pripraven = true
             cekajici?.let { precti(it) }
             cekajici = null
         }
     }
 
-    fun precti(text: String) {
+    /** @param pridat true = přečte až po tom, co doznějí předchozí texty (jinak je přeruší) */
+    fun precti(text: String, pridat: Boolean = false) {
         if (!pripraven) {
             cekajici = text
             return
@@ -43,10 +57,10 @@ class Predcitac(context: Context) {
         if (!dostupny) return
         // Emoji a symboly by hlas četl divně, tak je vynecháme.
         val cisty = text.replace(Regex("[^\\p{L}\\p{N}\\s.,!?:()–-]"), " ")
-        tts?.speak(cisty, TextToSpeech.QUEUE_FLUSH, null, "klavir")
+        tts?.speak(cisty, if (pridat) TextToSpeech.QUEUE_ADD else TextToSpeech.QUEUE_FLUSH, null, "klavir")
     }
 
-    fun zastav() { tts?.stop() }
+    fun zastav() { tts?.stop(); mluvi = false }
 
     fun uvolni() { tts?.shutdown() }
 }

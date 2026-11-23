@@ -134,8 +134,8 @@ class AppStav(context: Context) {
     fun precti(text: String) = predcitac.precti(text)
 
     /** Přečte text jen pokud má žák zapnuté automatické předčítání. */
-    fun prectiAutomaticky(text: String) {
-        if (aktivni?.predcitatAutomaticky == true) predcitac.precti(text)
+    fun prectiAutomaticky(text: String, pridat: Boolean = false) {
+        if (aktivni?.predcitatAutomaticky == true) predcitac.precti(text, pridat)
     }
 
     fun uvolni() {
