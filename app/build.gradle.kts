@@ -53,6 +53,10 @@ android {
     buildFeatures {
         compose = true
     }
+    // Při vykreslování náhledů mimo Android vrací nedostupné systémové služby (např. předčítání) prázdné hodnoty.
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 // V logu testů chceme celý výpis chyby.
