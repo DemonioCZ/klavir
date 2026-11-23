@@ -175,7 +175,8 @@ fun ObrazovkaDomu(stav: AppStav) {
     LaunchedEffect(p.id) {
         stav.prectiAutomaticky("Ahoj ${p.jmeno}! " + (dalsiLekce?.let { "Dnes tě čeká lekce ${it.nazev}." } ?: "Vyber si písničku."))
     }
-    Column(Modifier.fillMaxSize().padding(horizontal = 32.dp, vertical = 22.dp)) {
+    // Obsah se dá posouvat, aby byla tlačítka dole vidět i na menších tabletech.
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 22.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
                 Modifier.size(64.dp).clip(CircleShape).background(Barvy.zlutaSvetla).clickable { stav.jdiNaHlavni(Obrazovka.Profily) },
@@ -195,6 +196,7 @@ fun ObrazovkaDomu(stav: AppStav) {
             if (p.dnuVRade > 0) Pilulka("🔥 ${p.dnuVRade} ${dny(p.dnuVRade)} v řadě")
             Pilulka("⭐ ${p.hvezdyCelkem}")
             Pilulka("🎵 ${p.body} bodů")
+            Pilulka("⚙️ Pro rodiče") { stav.jdi(Obrazovka.ProRodice) }
         }
         Spacer(Modifier.height(18.dp))
         Text("Lekce", style = styl(26))
@@ -265,7 +267,7 @@ fun ObrazovkaDomu(stav: AppStav) {
                 }
             }
         }
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(20.dp))
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Tlacitko("🏅 Odznaky", hlavni = false) { stav.jdi(Obrazovka.Odznaky) }
             Tlacitko("⚙️ Pro rodiče", hlavni = false) { stav.jdi(Obrazovka.ProRodice) }
