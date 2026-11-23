@@ -41,6 +41,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         stav = AppStav(this)
+        // Stažený instalační balíček po aktualizaci už nepotřebujeme – smažeme ho.
+        // (Aplikace se po instalaci nové verze spouští znovu, takže sem dojde až po aktualizaci.)
+        java.io.File(cacheDir, "aktualizace").deleteRecursively()
         stav.mikrofonPovolen = maMikrofon()
         if (stav.hrajeNaPiano && !stav.mikrofonPovolen) pozadatOMikrofon()
 
