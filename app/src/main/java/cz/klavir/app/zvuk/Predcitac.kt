@@ -13,17 +13,22 @@ class Predcitac(context: Context) {
     var dostupny = false; private set
     private var cekajici: String? = null
 
-    private lateinit var tts: TextToSpeech
+    private var tts: TextToSpeech? = null
 
     init {
-        tts = TextToSpeech(context.applicationContext) { stav -> priInicializaci(stav) }
+        tts = try {
+            TextToSpeech(context.applicationContext) { stav -> priInicializaci(stav) }
+        } catch (e: Exception) {
+            null // např. při vykreslování náhledů bez systému Android
+        }
     }
 
     private fun priInicializaci(stav: Int) {
         if (stav == TextToSpeech.SUCCESS) {
-            val vysledek = tts.setLanguage(Locale("cs", "CZ"))
+            val t = tts ?: return
+            val vysledek = t.setLanguage(Locale("cs", "CZ"))
             dostupny = vysledek != TextToSpeech.LANG_MISSING_DATA && vysledek != TextToSpeech.LANG_NOT_SUPPORTED
-            tts.setSpeechRate(0.9f)
+            t.setSpeechRate(0.9f)
             pripraven = true
             cekajici?.let { precti(it) }
             cekajici = null
@@ -38,10 +43,10 @@ class Predcitac(context: Context) {
         if (!dostupny) return
         // Emoji a symboly by hlas četl divně, tak je vynecháme.
         val cisty = text.replace(Regex("[^\\p{L}\\p{N}\\s.,!?:()–-]"), " ")
-        tts.speak(cisty, TextToSpeech.QUEUE_FLUSH, null, "klavir")
+        tts?.speak(cisty, TextToSpeech.QUEUE_FLUSH, null, "klavir")
     }
 
-    fun zastav() = tts.stop()
+    fun zastav() { tts?.stop() }
 
-    fun uvolni() = tts.shutdown()
+    fun uvolni() { tts?.shutdown() }
 }
