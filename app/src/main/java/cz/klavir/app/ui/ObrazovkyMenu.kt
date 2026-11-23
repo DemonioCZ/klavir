@@ -59,6 +59,7 @@ fun ObrazovkaProfily(stav: AppStav) {
     LaunchedEffect(Unit) { if (stav.profily.isEmpty()) novyDialog = true }
 
     Box(Modifier.fillMaxSize().padding(32.dp)) {
+        Tlacitko("⚙️ Pro rodiče", hlavni = false, modifier = Modifier.align(Alignment.TopEnd)) { stav.jdi(Obrazovka.ProRodice) }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(16.dp))
             Sova(velikost = 120.dp)
@@ -196,7 +197,6 @@ fun ObrazovkaDomu(stav: AppStav) {
             if (p.dnuVRade > 0) Pilulka("🔥 ${p.dnuVRade} ${dny(p.dnuVRade)} v řadě")
             Pilulka("⭐ ${p.hvezdyCelkem}")
             Pilulka("🎵 ${p.body} bodů")
-            Pilulka("⚙️ Pro rodiče") { stav.jdi(Obrazovka.ProRodice) }
         }
         Spacer(Modifier.height(18.dp))
         Text("Lekce", style = styl(26))
@@ -270,7 +270,6 @@ fun ObrazovkaDomu(stav: AppStav) {
         Spacer(Modifier.height(20.dp))
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Tlacitko("🏅 Odznaky", hlavni = false) { stav.jdi(Obrazovka.Odznaky) }
-            Tlacitko("⚙️ Pro rodiče", hlavni = false) { stav.jdi(Obrazovka.ProRodice) }
             val pokracovat: Obrazovka = dalsiLekce?.let { Obrazovka.Lekce(it.id) }
                 ?: Pisnicky.vsechny.firstOrNull { p.pisnickaOdemcena(it) && (p.hvezdyPisnicek[it.id] ?: 0) < 3 }?.let { Obrazovka.Pisnicka(it.id) }
                 ?: Obrazovka.Pisnicka(Pisnicky.skakalPes.id)
@@ -291,11 +290,17 @@ fun ObrazovkaVysledek(stav: AppStav, v: Obrazovka.Vysledek) {
     LaunchedEffect(Unit) {
         stav.prectiAutomaticky("$pochvala Máš $hvezdy ${if (hvezdy == 1) "hvězdičku" else "hvězdičky"}.")
     }
-    Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-        Sova(velikost = 240.dp)
+    Row(Modifier.fillMaxSize().padding(24.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        // Sovička a ovládací tlačítka jsou vždy vlevo, aby je nezakryly nové odznaky.
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Sova(velikost = 200.dp)
+            if (v.dalsi != null) Tlacitko("Další ›", Modifier.width(240.dp)) { stav.jdiNaHlavni(v.dalsi) }
+            Tlacitko("↻ Znovu", Modifier.width(240.dp), hlavni = v.dalsi == null) { stav.jdiNaHlavni(v.znovu) }
+            Tlacitko("🏠 Domů", Modifier.width(240.dp), hlavni = false) { stav.jdiNaHlavni(Obrazovka.Domu) }
+        }
         Spacer(Modifier.width(40.dp))
         Column(
-            Modifier.width(660.dp).karta().padding(horizontal = 40.dp, vertical = 28.dp),
+            Modifier.width(660.dp).karta().verticalScroll(rememberScrollState()).padding(horizontal = 40.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("⭐".repeat(hvezdy) + "☆".repeat(3 - hvezdy), style = styl(60))
@@ -321,12 +326,6 @@ fun ObrazovkaVysledek(stav: AppStav, v: Obrazovka.Vysledek) {
                         Text(o.popis, style = styl(18, tucne = false, barva = Barvy.tlumeny))
                     }
                 }
-            }
-            Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Tlacitko("🏠", hlavni = false) { stav.jdiNaHlavni(Obrazovka.Domu) }
-                Tlacitko("↻ Znovu", hlavni = false) { stav.jdiNaHlavni(v.znovu) }
-                if (v.dalsi != null) Tlacitko("Další ›") { stav.jdiNaHlavni(v.dalsi) }
-                else Tlacitko("Domů") { stav.jdiNaHlavni(Obrazovka.Domu) }
             }
         }
     }
@@ -393,11 +392,10 @@ fun ObrazovkaOdznaky(stav: AppStav) {
 
 @Composable
 fun ObrazovkaProRodice(stav: AppStav) {
-    val p = stav.aktivni ?: return
     val kontext = LocalContext.current
     val rozsah = rememberCoroutineScope()
-    var upravit by remember { mutableStateOf(false) }
-    var potvrditSmazani by remember { mutableStateOf(false) }
+    var upravitId by remember { mutableStateOf<String?>(null) }
+    var smazatId by remember { mutableStateOf<String?>(null) }
     var aktualizace by remember { mutableStateOf("") }
     var nalezena by remember { mutableStateOf<Aktualizace.Info?>(null) }
     var stahuje by remember { mutableStateOf(false) }
@@ -405,22 +403,31 @@ fun ObrazovkaProRodice(stav: AppStav) {
     Column(Modifier.fillMaxSize().padding(horizontal = 32.dp, vertical = 22.dp)) {
         HorniLista("Pro rodiče", onZpet = { stav.zpet() })
         Column(Modifier.verticalScroll(rememberScrollState()).padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Profil žáka
-            Column(Modifier.fillMaxWidth().karta().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Profil žáka", style = styl(26))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(p.zvire, style = styl(56))
-                    Column(Modifier.weight(1f)) {
-                        Text(p.jmeno, style = styl(30))
-                        Text("Úroveň ${p.uroven} · ${p.body} bodů · ⭐ ${p.hvezdyCelkem}", style = styl(18, tucne = false, barva = Barvy.tlumeny))
+            // Profily žáků – každý má vlastní nastavení předčítání
+            Column(Modifier.fillMaxWidth().karta().padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("Žáci", style = styl(26))
+                if (stav.profily.isEmpty()) Text("Zatím tu není žádný žák.", style = styl(18, tucne = false, barva = Barvy.tlumeny))
+                stav.profily.forEach { p ->
+                    Column(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFFFBF7EE)).padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text(p.zvire, style = styl(48))
+                            Column(Modifier.weight(1f)) {
+                                Text(p.jmeno, style = styl(28))
+                                Text("Úroveň ${p.uroven} · ${p.body} bodů · ⭐ ${p.hvezdyCelkem}", style = styl(18, tucne = false, barva = Barvy.tlumeny))
+                            }
+                            Tlacitko("Upravit", hlavni = false, velikost = 18) { upravitId = p.id }
+                            Tlacitko("Smazat", hlavni = false, velikost = 18) { smazatId = p.id }
+                        }
+                        Radek(
+                            "Automaticky předčítat texty",
+                            "Pro děti, které ještě neumí číst. Zadání se přečte samo, jakmile se objeví.",
+                        ) {
+                            Switch(checked = p.predcitatAutomaticky, onCheckedChange = { stav.upravProfil(p.copy(predcitatAutomaticky = it)) })
+                        }
                     }
-                    Tlacitko("Upravit jméno a zvířátko", hlavni = false, velikost = 20) { upravit = true }
-                }
-                Radek(
-                    "Automaticky předčítat texty",
-                    "Pro děti, které ještě neumí číst. Zadání se přečte samo, jakmile se objeví.",
-                ) {
-                    Switch(checked = p.predcitatAutomaticky, onCheckedChange = { stav.upravProfil(p.copy(predcitatAutomaticky = it)) })
                 }
                 if (stav.predcitac.pripraven && !stav.predcitac.dostupny) {
                     Text(
@@ -428,7 +435,6 @@ fun ObrazovkaProRodice(stav: AppStav) {
                         style = styl(16, tucne = false, barva = Barvy.oranzova),
                     )
                 }
-                Tlacitko("Smazat profil", hlavni = false, velikost = 18) { potvrditSmazani = true }
             }
             // Ovládání
             Column(Modifier.fillMaxWidth().karta().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -490,21 +496,21 @@ fun ObrazovkaProRodice(stav: AppStav) {
             )
         }
     }
-    if (upravit) {
-        DialogNovyProfil(p.jmeno, p.zvire, "Upravit profil", onZrusit = { upravit = false }) { jmeno, zvire ->
-            upravit = false
+    stav.profily.firstOrNull { it.id == upravitId }?.let { p ->
+        DialogNovyProfil(p.jmeno, p.zvire, "Upravit profil", onZrusit = { upravitId = null }) { jmeno, zvire ->
+            upravitId = null
             stav.upravProfil(p.copy(jmeno = jmeno.trim(), zvire = zvire))
         }
     }
-    if (potvrditSmazani) {
-        Dialog(onDismissRequest = { potvrditSmazani = false }) {
+    stav.profily.firstOrNull { it.id == smazatId }?.let { p ->
+        Dialog(onDismissRequest = { smazatId = null }) {
             Column(Modifier.width(520.dp).karta().padding(28.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Smazat profil ${p.jmeno}?", style = styl(30))
                 Text("Smažou se i body, hvězdičky a odznaky. Nedá se to vrátit.", style = styl(20, tucne = false))
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.align(Alignment.End)) {
-                    Tlacitko("Ponechat", hlavni = false) { potvrditSmazani = false }
+                    Tlacitko("Ponechat", hlavni = false) { smazatId = null }
                     Tlacitko("Smazat") {
-                        potvrditSmazani = false
+                        smazatId = null
                         stav.smazProfil(p.id)
                     }
                 }

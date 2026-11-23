@@ -50,7 +50,7 @@ fun Klaviatura(
     Canvas(
         modifier
             .fillMaxWidth()
-            .height(vyska)
+            .then(if (vyska != Dp.Unspecified) Modifier.height(vyska) else Modifier)
             .pointerInput(od, po) {
                 detectTapGestures { bod ->
                     val g = Geometrie(size.width.toFloat(), size.height.toFloat(), bile.size, 14.dp.toPx())

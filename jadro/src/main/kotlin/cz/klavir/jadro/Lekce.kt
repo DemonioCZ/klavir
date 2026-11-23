@@ -64,11 +64,10 @@ object Lekce1az5 {
     )
 
     /** Úkol „zahraj tuto notu“ pro lekce, které ukazují několik not v osnově. */
-    private fun ukolNota(ton: Int, napoveda: String) = Ukol(
+    private fun ukolNota(ton: Int) = Ukol(
         cil = ton, prst = POLOHA_C.indexOf(ton),
         text = "Zahraj ${Noty.nazev(ton)}",
         ukazNotu = false, ukazNazvyKlaves = true, zvyraznitKlavesu = false,
-        napoveda = napoveda,
     )
 
     // Každá nota se nejdřív několikrát zopakuje, aby si ji dítě stihlo zapamatovat; střídání přijde až na konci.
@@ -82,11 +81,7 @@ object Lekce1az5 {
             Noty.C4, Noty.C4, Noty.D4, Noty.D4, Noty.E4, Noty.E4,
             Noty.C4, Noty.D4, Noty.E4,
         ).map { ton ->
-            ukolNota(ton, when (ton) {
-                Noty.C4 -> "C je hned vlevo od dvojice černých kláves."
-                Noty.D4 -> "D je uprostřed mezi dvěma černými klávesami."
-                else -> "E je hned vpravo od dvojice černých kláves."
-            })
+            ukolNota(ton)
         },
         notyVOsnove = listOf(Noty.C4, Noty.D4, Noty.E4),
     )
@@ -100,7 +95,7 @@ object Lekce1az5 {
             Noty.F4, Noty.F4, Noty.G4, Noty.G4, Noty.F4, Noty.F4, Noty.G4, Noty.G4,
             Noty.F4, Noty.G4, Noty.F4, Noty.G4,
         ).map { ton ->
-            ukolNota(ton, if (ton == Noty.F4) "F je hned vlevo od trojice černých kláves." else "G je mezi první a druhou černou klávesou z trojice.")
+            ukolNota(ton)
         },
         notyVOsnove = listOf(Noty.F4, Noty.G4),
     )
@@ -126,7 +121,6 @@ object Lekce1az5 {
                 cil = ton, prst = POLOHA_C.indexOf(ton),
                 text = "Najdi tuhle notu na klavíru a zahraj ji",
                 ukazNotu = true, ukazNazvyKlaves = true, zvyraznitKlavesu = false,
-                napoveda = popisPolohy(ton),
             )
         },
     )

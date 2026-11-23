@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cz.klavir.app.AppStav
 import cz.klavir.app.Obrazovka
@@ -57,8 +58,9 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
     val rozsah = rememberCoroutineScope()
     val ukol = lekce.ukoly[index.coerceAtMost(lekce.ukoly.lastIndex)]
 
+    // Při opakování stejné noty se zadání čte jen poprvé, pak až když se nota změní.
     LaunchedEffect(id, index) {
-        stav.prectiAutomaticky(ukol.text)
+        if (index == 0 || lekce.ukoly[index - 1].cil != ukol.cil) stav.prectiAutomaticky(ukol.text)
     }
 
     val vstup = napojVstup(stav) { midi, zMikrofonu ->
@@ -106,8 +108,10 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
                     }
                     ukol.ukazNotu -> {
                         val barva = if (odezva?.dobre == true) Barvy.zelena else Barvy.text
-                        OsnovaJednaNota(ukol.cil, barva, Modifier.fillMaxSize().padding(12.dp))
-                        if (odezva?.dobre == true || ukol.ukazNazvyKlaves && chybaVUkolu) {
+                        // V lekci „Noty a klávesy“ je písmeno rovnou pod notou.
+                        val pismenoPodNotou = lekce.id == "noty_klavesy"
+                        OsnovaJednaNota(ukol.cil, barva, Modifier.fillMaxSize().padding(12.dp), pismeno = if (pismenoPodNotou) Noty.nazev(ukol.cil) else null)
+                        if (!pismenoPodNotou && (odezva?.dobre == true || ukol.ukazNazvyKlaves && chybaVUkolu)) {
                             Text(Noty.nazev(ukol.cil), style = styl(48, barva = Barvy.zelena), modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp))
                         }
                     }
@@ -217,7 +221,8 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
 
     val textUkolu = "Teď zahraj ${Noty.nazev(nota.midi)} ${Lekce1az5.prstemSlovy(nota.prst)} (${nota.prst})"
     LaunchedEffect(id, index, kolo, rezim) {
-        if (rezim == Rezim.CEKAM && ukazka == null) stav.prectiAutomaticky(textUkolu + (nota.posun?.let { ". $it" } ?: ""))
+        val zmena = index == 0 || noty[index - 1].midi != nota.midi || nota.posun != null
+        if (rezim == Rezim.CEKAM && ukazka == null && zmena) stav.prectiAutomaticky(textUkolu + (nota.posun?.let { ". $it" } ?: ""))
     }
 
     val vstup = napojVstup(stav) { midi, zMikrofonu ->
@@ -302,6 +307,7 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
             Pilulka(if (ukazka != null) "⏹ Zastavit" else "👂 Poslechni si", velikost = 18) {
                 if (ukazka != null) ukazka?.cancel() else prehrajUkazku()
             }
+            if (rezim == Rezim.CEKAM && index > 0 && !hotovo) Pilulka("↺ Od začátku", velikost = 18) { kolo++ }
             MikrofonPrepinac(stav, onPozadatOMikrofon)
             if (h.serie >= 2) Pilulka("Série ×${h.serie} 🔥")
             Pilulka("🎵 +${h.body}")
@@ -314,32 +320,10 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
                     Text(it, style = styl(80, barva = Color.White))
                 }
             }
-        }
-        Spacer(Modifier.height(12.dp))
-        // zadání pod osnovou, reproduktor vpravo dole
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Box(Modifier.weight(1f).karta().padding(start = 22.dp, end = 14.dp, top = 10.dp, bottom = 10.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(end = 60.dp)) {
-                    if (rezim == Rezim.TEMPO && !tempoBezi && odpocet == null) {
-                        Text("Hraj podle not v tempu. Až budeš připravený, ťukni na Start.", style = styl(24))
-                    } else {
-                        Text(
-                            "Teď zahraj ${Noty.nazev(nota.midi)} ${Lekce1az5.prstemSlovy(nota.prst)}",
-                            style = styl(26, barva = Barvy.text),
-                        )
-                        CisloPrstu(nota.prst, 40.dp)
-                        nota.posun?.let { Text("↔ $it", style = styl(18, barva = Barvy.oranzova)) }
-                            ?: Text(pisnicka.poloha, style = styl(18, tucne = false, barva = Barvy.tlumeny))
-                    }
-                }
-                Reproduktor(Modifier.align(Alignment.BottomEnd)) {
-                    stav.precti(textUkolu + (nota.posun?.let { ". $it" } ?: ""))
-                }
+            if (rezim == Rezim.TEMPO && !tempoBezi && odpocet == null && !hotovo) {
+                Tlacitko("▶ Start", modifier = Modifier.align(Alignment.Center)) { spustTempo() }
             }
-            if (rezim == Rezim.TEMPO && !tempoBezi && odpocet == null && !hotovo) Tlacitko("▶ Start") { spustTempo() }
-            if (rezim == Rezim.CEKAM && index > 0 && !hotovo) Tlacitko("↺ Od začátku", hlavni = false, velikost = 20) { kolo++ }
         }
-        Spacer(Modifier.weight(1f))
         // klaviatura: poloha ruky s čísly prstů, cílová klávesa v barvě prstu
         val oznaceni = buildMap {
             val bilyPalec = bilaKlavesa(nota.midi, -(nota.prst - 1))
@@ -347,7 +331,8 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
             put(nota.midi, OznaceniKlavesy(Barvy.prst(nota.prst), nota.prst, Color.White, tmavyPopis = true))
             spatnaKlavesa?.let { put(it, OznaceniKlavesy(Barvy.oranzovaSvetla, obrys = Barvy.oranzova)) }
         }
-        Klaviatura(vyska = 250.dp, oznaceni = oznaceni, onKlavesa = vstup)
+        // klávesy vyplní celé zbývající místo pod osnovou
+        Klaviatura(Modifier.weight(1f).padding(top = 12.dp), vyska = Dp.Unspecified, oznaceni = oznaceni, onKlavesa = vstup)
     }
 }
 

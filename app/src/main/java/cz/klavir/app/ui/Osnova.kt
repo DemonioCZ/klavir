@@ -88,7 +88,7 @@ object Osnova {
 
 /** Osnova s jednou velkou notou (lekce čtení not). */
 @Composable
-fun OsnovaJednaNota(midi: Int?, barva: Color, modifier: Modifier = Modifier) {
+fun OsnovaJednaNota(midi: Int?, barva: Color, modifier: Modifier = Modifier, pismeno: String? = null) {
     val mereni = rememberTextMeasurer()
     Canvas(modifier) {
         val mezera = size.height / 11f
@@ -96,6 +96,10 @@ fun OsnovaJednaNota(midi: Int?, barva: Color, modifier: Modifier = Modifier) {
         with(Osnova) {
             linkyAKlic(r, mereni)
             if (midi != null) nota(r, size.width * 0.62f, midi, 1f, barva)
+            // písmeno noty pod osnovou
+            if (midi != null && pismeno != null) {
+                popisek(mereni, pismeno, Offset(size.width * 0.62f, r.spodniLinka + mezera * 2.6f), Barvy.zelena, 44)
+            }
         }
     }
 }
