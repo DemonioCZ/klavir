@@ -39,8 +39,8 @@ class NahledyTest {
         showSystemUi = false,
     )
 
-    private fun stav(): AppStav {
-        val s = AppStav(paparazzi.context)
+    private fun stav(kontext: android.content.Context): AppStav {
+        val s = AppStav(kontext)
         if (s.profily.isEmpty()) {
             s.pridejProfil("Anička", "🦊")
             s.pridejProfil("Tonda", "🐻")
@@ -59,22 +59,23 @@ class NahledyTest {
         return s
     }
 
-    private fun obrazovka(obsah: @Composable () -> Unit) = paparazzi.snapshot {
-        Box(Modifier.fillMaxSize().background(Barvy.pozadi)) { obsah() }
+    private fun obrazovka(obsah: @Composable (AppStav) -> Unit) = paparazzi.snapshot {
+        val kontext = androidx.compose.ui.platform.LocalContext.current
+        val s = androidx.compose.runtime.remember { stav(kontext) }
+        Box(Modifier.fillMaxSize().background(Barvy.pozadi)) { obsah(s) }
     }
 
-    @Test fun profily() { val s = stav(); obrazovka { ObrazovkaProfily(s) } }
-    @Test fun domu() { val s = stav(); obrazovka { ObrazovkaDomu(s) } }
-    @Test fun lekcePrstiky() { val s = stav(); obrazovka { ObrazovkaLekce(s, "prstiky") {} } }
-    @Test fun lekceNoty() { val s = stav(); obrazovka { ObrazovkaLekce(s, "noty_klavesy") {} } }
-    @Test fun pisnicka() { val s = stav(); obrazovka { ObrazovkaPisnicka(s, "skakal_pes") {} } }
-    @Test fun pisnickaKocka() { val s = stav(); obrazovka { ObrazovkaPisnicka(s, "kocka_leze") {} } }
-    @Test fun odznaky() { val s = stav(); obrazovka { ObrazovkaOdznaky(s) } }
-    @Test fun proRodice() { val s = stav(); obrazovka { ObrazovkaProRodice(s) } }
+    @Test fun profily() = obrazovka { s -> ObrazovkaProfily(s) }
+    @Test fun domu() = obrazovka { s -> ObrazovkaDomu(s) }
+    @Test fun lekcePrstiky() = obrazovka { s -> ObrazovkaLekce(s, "prstiky") {} }
+    @Test fun lekceNoty() = obrazovka { s -> ObrazovkaLekce(s, "noty_klavesy") {} }
+    @Test fun pisnicka() = obrazovka { s -> ObrazovkaPisnicka(s, "skakal_pes") {} }
+    @Test fun pisnickaKocka() = obrazovka { s -> ObrazovkaPisnicka(s, "kocka_leze") {} }
+    @Test fun odznaky() = obrazovka { s -> ObrazovkaOdznaky(s) }
+    @Test fun proRodice() = obrazovka { s -> ObrazovkaProRodice(s) }
     @Test fun vysledek() {
-        val s = stav()
         val h = Hodnoceni().apply { repeat(23) { spravne() }; chyba() }
-        obrazovka {
+        obrazovka { s ->
             ObrazovkaVysledek(
                 s,
                 Obrazovka.Vysledek("Skákal pes", "režim „Počkám na tebe“", h, listOf(Odznaky.vsechny[3]), Obrazovka.Domu, Obrazovka.Domu),
