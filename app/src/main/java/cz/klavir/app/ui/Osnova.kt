@@ -17,7 +17,8 @@ import cz.klavir.jadro.Nota
 import cz.klavir.jadro.Noty
 
 /** Stav noty v písničce – podle toho se obarví. */
-enum class StavNoty { CEKA, AKTUALNI, SPRAVNE, S_CHYBOU }
+/** CHYBA = aktuální nota, kterou žák zahrál špatně (zůstane oranžová, dokud ji nezahraje správně). */
+enum class StavNoty { CEKA, AKTUALNI, CHYBA, SPRAVNE, S_CHYBOU }
 
 /**
  * Notová osnova s houslovým klíčem.
@@ -119,6 +120,7 @@ fun OsnovaPisnicky(
     stavy: List<StavNoty>,
     aktualni: Int,
     modifier: Modifier = Modifier,
+    barvaAktualni: Color? = null,
 ) {
     val mereni = rememberTextMeasurer()
     Canvas(modifier) {
@@ -158,9 +160,10 @@ fun OsnovaPisnicky(
                     if (px < startX - 40.dp.toPx() || px > size.width + 40.dp.toPx()) return@forEachIndexed
                     val stav = stavy.getOrElse(i) { StavNoty.CEKA }
                     val barvaPrstu = Barvy.prst(n.prst)
-                    if (stav == StavNoty.AKTUALNI) {
+                    val barvaTed = if (stav == StavNoty.CHYBA) Barvy.oranzova else barvaAktualni ?: barvaPrstu
+                    if (stav == StavNoty.AKTUALNI || stav == StavNoty.CHYBA) {
                         drawRoundRect(
-                            barvaPrstu.copy(alpha = 0.13f),
+                            barvaTed.copy(alpha = if (barvaAktualni != null) 0.2f else 0.13f),
                             Offset(px - krokDoby * 0.45f, r.horniLinka - 62.dp.toPx() * k),
                             Size(krokDoby * 0.9f, r.spodniLinka - r.horniLinka + 128.dp.toPx() * k),
                             androidx.compose.ui.geometry.CornerRadius(16.dp.toPx()),
@@ -168,7 +171,7 @@ fun OsnovaPisnicky(
                     }
                     val barva = when (stav) {
                         StavNoty.CEKA -> Barvy.text
-                        StavNoty.AKTUALNI -> barvaPrstu
+                        StavNoty.AKTUALNI, StavNoty.CHYBA -> barvaTed
                         StavNoty.SPRAVNE -> Barvy.zelena
                         StavNoty.S_CHYBOU -> Barvy.oranzova
                     }
@@ -176,8 +179,10 @@ fun OsnovaPisnicky(
                     // číslo prstu nad osnovou
                     val stredPrstu = Offset(px, r.horniLinka - 34.dp.toPx() * k)
                     val alfa = if (stav == StavNoty.SPRAVNE || stav == StavNoty.S_CHYBOU) 0.35f else 1f
-                    drawCircle(barvaPrstu.copy(alpha = alfa), 15.dp.toPx() * k, stredPrstu)
-                    popisek(mereni, "${n.prst}", stredPrstu, Color.White, 18)
+                    if (n.prst in 1..5) {
+                        drawCircle(barvaPrstu.copy(alpha = alfa), 15.dp.toPx() * k, stredPrstu)
+                        popisek(mereni, "${n.prst}", stredPrstu, Color.White, 18)
+                    }
                     if (n.posun != null) {
                         popisek(mereni, "↔", Offset(px, r.horniLinka - 62.dp.toPx() * k), Barvy.oranzova, 22)
                     }
@@ -185,7 +190,7 @@ fun OsnovaPisnicky(
                     if (n.slabika.isNotEmpty()) {
                         popisek(
                             mereni, n.slabika, Offset(px, r.spodniLinka + 48.dp.toPx() * k),
-                            if (stav == StavNoty.AKTUALNI) barvaPrstu else Barvy.text, 22,
+                            if (stav == StavNoty.AKTUALNI || stav == StavNoty.CHYBA) barvaTed else Barvy.text, 22,
                         )
                     }
                     if (stav == StavNoty.SPRAVNE) popisek(mereni, "✓", Offset(px, r.spodniLinka + 76.dp.toPx() * k), Barvy.zelena, 16)

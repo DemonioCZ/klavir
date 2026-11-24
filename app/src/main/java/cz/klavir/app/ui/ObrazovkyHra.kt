@@ -33,6 +33,7 @@ import cz.klavir.app.AppStav
 import cz.klavir.app.Obrazovka
 import cz.klavir.jadro.Hodnoceni
 import cz.klavir.jadro.Lekce1az5
+import cz.klavir.jadro.Nota
 import cz.klavir.jadro.Noty
 import cz.klavir.jadro.Pisnicky
 import kotlinx.coroutines.Job
@@ -57,6 +58,11 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
     var spatnaKlavesa by remember(id) { mutableStateOf<Int?>(null) }
     val rozsah = rememberCoroutineScope()
     val ukol = lekce.ukoly[index.coerceAtMost(lekce.ukoly.lastIndex)]
+    // Lekce 2–5: místo okénka s úkoly je široká osnova se všemi notami za sebou.
+    val radou = lekce.id in LEKCE_RADOU
+    val stavyNot = remember(id) {
+        mutableStateListOf<StavNoty>().apply { lekce.ukoly.indices.forEach { add(if (it == 0) StavNoty.AKTUALNI else StavNoty.CEKA) } }
+    }
 
     // Zadání se čte jen tehdy, když se změnila nota i text (stejná nota ani stále stejná věta se neopakují).
     LaunchedEffect(id, index) {
@@ -66,6 +72,32 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
 
     val vstup = napojVstup(stav) { midi, zMikrofonu ->
         if (prechod) return@napojVstup
+        if (radou) {
+            if (Noty.stejnyNazev(midi, ukol.cil)) {
+                h.spravne(zMikrofonu)
+                spatnaKlavesa = null
+                stavyNot[index] = StavNoty.SPRAVNE
+                chybaVUkolu = false
+                if (index + 1 >= lekce.ukoly.size) {
+                    prechod = true
+                    rozsah.launch {
+                        delay(600)
+                        val dalsi = Lekce1az5.vsechny.getOrNull(lekce.cislo)?.let { Obrazovka.Lekce(it.id) }
+                        stav.dokonceno(lekce.nazev, lekce.id, null, h, Obrazovka.Lekce(lekce.id), dalsi ?: Obrazovka.Domu, "Lekce ${lekce.cislo}")
+                    }
+                } else {
+                    index++
+                    stavyNot[index] = StavNoty.AKTUALNI
+                }
+            } else {
+                // špatně: nota zůstane oranžová, dokud ji žák nezahraje správně
+                if (!chybaVUkolu) h.chyba()
+                chybaVUkolu = true
+                spatnaKlavesa = midi
+                stavyNot[index] = StavNoty.CHYBA
+            }
+            return@napojVstup
+        }
         if (Noty.stejnyNazev(midi, ukol.cil)) {
             val body = h.spravne(zMikrofonu)
             odezva = Odezva(POCHVALY[index % POCHVALY.size] + " To je ${Noty.nazev(ukol.cil)}", "+$body bodů", true)
@@ -97,9 +129,18 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
             if (h.serie >= 2) Pilulka("Série ×${h.serie} 🔥")
             Pilulka("🎵 +${h.body}")
         }
-        Postup(index.toFloat() / lekce.ukoly.size, Modifier.fillMaxWidth().padding(top = 8.dp))
-        Spacer(Modifier.height(14.dp))
-        Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+        val hotovo = if (radou) stavyNot.count { it == StavNoty.SPRAVNE } else index
+        Postup(hotovo.toFloat() / lekce.ukoly.size, Modifier.fillMaxWidth().padding(top = 8.dp))
+        if (radou) {
+            // osnova se všemi notami lekce: fialově ta, kterou má žák zahrát
+            val noty = remember(id) {
+                lekce.ukoly.map { u -> Nota(u.cil, 1f, u.prst ?: 0, Noty.nazev(u.cil)) }
+            }
+            Box(Modifier.fillMaxWidth().weight(0.4f).padding(top = 12.dp).karta()) {
+                OsnovaPisnicky(noty, stavyNot, index, Modifier.fillMaxSize(), barvaAktualni = Barvy.fialova)
+            }
+        } else Spacer(Modifier.height(14.dp))
+        if (!radou) Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
             // obrázek vlevo
             Box(Modifier.width(520.dp).fillMaxHeight().karta(), contentAlignment = Alignment.Center) {
                 when {
@@ -142,7 +183,7 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
                 OdezvaKarta(odezva) { stav.precti(it) }
             }
         }
-        Spacer(Modifier.height(16.dp))
+        if (!radou) Spacer(Modifier.height(16.dp))
         // klaviatura s nápovědou
         val oznaceni = buildMap {
             if (ukol.prst != null && lekce.id in setOf("prstiky", "pet_prstiku")) {
@@ -152,9 +193,16 @@ fun ObrazovkaLekce(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit) {
             spatnaKlavesa?.let { put(it, OznaceniKlavesy(Barvy.oranzovaSvetla, obrys = Barvy.oranzova)) }
             if (odezva?.dobre == true) put(ukol.cil, OznaceniKlavesy(Barvy.zelena, tmavyPopis = true))
         }
-        Klaviatura(vyska = 250.dp, oznaceni = oznaceni, ukazNazvy = ukol.ukazNazvyKlaves, onKlavesa = vstup)
+        if (radou) {
+            Klaviatura(Modifier.weight(0.6f).padding(top = 12.dp), vyska = Dp.Unspecified, oznaceni = oznaceni, ukazNazvy = ukol.ukazNazvyKlaves, onKlavesa = vstup)
+        } else {
+            Klaviatura(vyska = 250.dp, oznaceni = oznaceni, ukazNazvy = ukol.ukazNazvyKlaves, onKlavesa = vstup)
+        }
     }
 }
+
+/** Lekce, které ukazují všechny noty v jedné dlouhé osnově. */
+private val LEKCE_RADOU = setOf("cde", "fg", "ah", "pet_prstiku")
 
 @Composable
 private fun OdezvaKarta(odezva: Odezva?, onPrecti: (String) -> Unit) {
@@ -236,8 +284,6 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
                     stavy[index] = if (chybaVNote) StavNoty.S_CHYBOU else StavNoty.SPRAVNE
                     spatnaKlavesa = null
                     chybaVNote = false
-                    // po zahrané poslední slabice slova aplikace přečte celé slovo (jednotlivé slabiky hlas čte špatně)
-                    if (nota.slovo.isNotBlank()) stav.precti(nota.slovo)
                     if (index + 1 >= noty.size) dokonci() else index++
                 } else {
                     if (!chybaVNote) h.chyba()

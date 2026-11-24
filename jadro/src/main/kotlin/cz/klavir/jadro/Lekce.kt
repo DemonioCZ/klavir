@@ -131,7 +131,7 @@ object Lekce1az5 {
     )
 
     val notyAKlavesy = Lekce(
-        "noty_klavesy", 6, "Noty a klávesy", "🎼",
+        "noty_klavesy", 6, "Noty s nápovědou", "🎼",
         "Každá nota v osnově patří k jedné klávese.",
         listOf(Noty.E4, Noty.G4, Noty.C4, Noty.A4, Noty.F4, Noty.D4, Noty.H4, Noty.E4, Noty.G4, Noty.C4, Noty.F4, Noty.A4, Noty.D4, Noty.H4).map { ton ->
             Ukol(
@@ -143,7 +143,7 @@ object Lekce1az5 {
     )
 
     val notyVOsnove = Lekce(
-        "noty_osnova", 7, "Noty v osnově", "📖",
+        "noty_osnova", 7, "Noty už znám", "📖",
         "Poznej notu podle toho, kde sedí v osnově. Zvládneš to!",
         listOf(Noty.G4, Noty.E4, Noty.A4, Noty.D4, Noty.H4, Noty.F4, Noty.C4, Noty.A4, Noty.G4, Noty.E4, Noty.H4, Noty.D4, Noty.F4, Noty.C4).map { ton ->
             Ukol(
