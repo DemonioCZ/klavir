@@ -47,6 +47,9 @@ object Lekce1az5 {
     /** Klávesy polohy C: palec na C … malíček na G. */
     private val POLOHA_C = intArrayOf(0, Noty.C4, Noty.D4, Noty.E4, Noty.F4, Noty.G4)
 
+    /** Prst pro tón v poloze C, nebo null (A a H leží mimo polohu, na prstu nezáleží). */
+    private fun prstVPolozeC(ton: Int): Int? = POLOHA_C.indexOf(ton).takeIf { it > 0 }
+
     private fun ukolPrst(prst: Int) = Ukol(
         cil = POLOHA_C[prst],
         prst = prst,
@@ -65,7 +68,7 @@ object Lekce1az5 {
 
     /** Úkol „zahraj tuto notu“ pro lekce, které ukazují několik not v osnově. */
     private fun ukolNota(ton: Int) = Ukol(
-        cil = ton, prst = POLOHA_C.indexOf(ton),
+        cil = ton, prst = prstVPolozeC(ton),
         text = "Zahraj ${Noty.nazev(ton)}",
         ukazNotu = false, ukazNazvyKlaves = true, zvyraznitKlavesu = false,
     )
@@ -100,8 +103,22 @@ object Lekce1az5 {
         notyVOsnove = listOf(Noty.F4, Noty.G4),
     )
 
+    val ah = Lekce(
+        "ah", 4, "A, H", "🎵",
+        "A a H leží hned vpravo od G. Po H už zase přijde C.",
+        listOf(
+            Noty.A4, Noty.A4, Noty.A4, Noty.A4,
+            Noty.H4, Noty.H4, Noty.H4, Noty.H4,
+            Noty.A4, Noty.A4, Noty.H4, Noty.H4, Noty.A4, Noty.A4, Noty.H4, Noty.H4,
+            Noty.A4, Noty.H4, Noty.A4, Noty.H4,
+        ).map { ton ->
+            ukolNota(ton)
+        },
+        notyVOsnove = listOf(Noty.A4, Noty.H4),
+    )
+
     val petPrstiku = Lekce(
-        "pet_prstiku", 4, "Pět prstíků C–G", "🖐️",
+        "pet_prstiku", 5, "Pět prstíků C–G", "🖐️",
         "Ruka leží v poloze C. Hraj nahoru a dolů jako po schodech.",
         listOf(1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 4, 3, 2, 1, 1).map { prst ->
             val ton = POLOHA_C[prst]
@@ -114,11 +131,11 @@ object Lekce1az5 {
     )
 
     val notyAKlavesy = Lekce(
-        "noty_klavesy", 5, "Noty a klávesy", "🎼",
+        "noty_klavesy", 6, "Noty a klávesy", "🎼",
         "Každá nota v osnově patří k jedné klávese.",
-        listOf(Noty.E4, Noty.G4, Noty.C4, Noty.F4, Noty.D4, Noty.E4, Noty.G4, Noty.C4, Noty.F4, Noty.D4).map { ton ->
+        listOf(Noty.E4, Noty.G4, Noty.C4, Noty.A4, Noty.F4, Noty.D4, Noty.H4, Noty.E4, Noty.G4, Noty.C4, Noty.F4, Noty.A4, Noty.D4, Noty.H4).map { ton ->
             Ukol(
-                cil = ton, prst = POLOHA_C.indexOf(ton),
+                cil = ton, prst = prstVPolozeC(ton),
                 text = "Najdi tuhle notu na klavíru a zahraj ji",
                 ukazNotu = true, ukazNazvyKlaves = true, zvyraznitKlavesu = false,
             )
@@ -126,9 +143,9 @@ object Lekce1az5 {
     )
 
     val notyVOsnove = Lekce(
-        "noty_osnova", 6, "Noty v osnově", "📖",
+        "noty_osnova", 7, "Noty v osnově", "📖",
         "Poznej notu podle toho, kde sedí v osnově. Zvládneš to!",
-        listOf(Noty.G4, Noty.E4, Noty.A4, Noty.D4, Noty.F4, Noty.C4, Noty.A4, Noty.G4, Noty.E4, Noty.D4, Noty.F4, Noty.C4).map { ton ->
+        listOf(Noty.G4, Noty.E4, Noty.A4, Noty.D4, Noty.H4, Noty.F4, Noty.C4, Noty.A4, Noty.G4, Noty.E4, Noty.H4, Noty.D4, Noty.F4, Noty.C4).map { ton ->
             Ukol(
                 cil = ton, prst = null,
                 text = "Která je to nota? Zahraj ji",
@@ -138,7 +155,7 @@ object Lekce1az5 {
         },
     )
 
-    val vsechny: List<Lekce> = listOf(prstiky, cde, fg, petPrstiku, notyAKlavesy, notyVOsnove)
+    val vsechny: List<Lekce> = listOf(prstiky, cde, fg, ah, petPrstiku, notyAKlavesy, notyVOsnove)
 
     fun podleId(id: String): Lekce? = vsechny.firstOrNull { it.id == id }
 

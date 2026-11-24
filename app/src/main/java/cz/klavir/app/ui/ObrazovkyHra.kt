@@ -236,8 +236,8 @@ fun ObrazovkaPisnicka(stav: AppStav, id: String, onPozadatOMikrofon: () -> Unit)
                     stavy[index] = if (chybaVNote) StavNoty.S_CHYBOU else StavNoty.SPRAVNE
                     spatnaKlavesa = null
                     chybaVNote = false
-                    // po zahrané notě aplikace „zazpívá“ slabiku textu písničky
-                    if (nota.slabika.isNotBlank()) stav.precti(nota.slabika.trimEnd('-', '–'))
+                    // po zahrané poslední slabice slova aplikace přečte celé slovo (jednotlivé slabiky hlas čte špatně)
+                    if (nota.slovo.isNotBlank()) stav.precti(nota.slovo)
                     if (index + 1 >= noty.size) dokonci() else index++
                 } else {
                     if (!chybaVNote) h.chyba()

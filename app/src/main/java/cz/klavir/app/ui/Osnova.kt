@@ -72,6 +72,11 @@ object Osnova {
                 drawOval(barva, Offset(x - rx, y - ry), Size(2 * rx, 2 * ry))
             }
         }
+        // tečka za notou (čtvrťová s tečkou, půlová s tečkou); na lince se posune do mezery nad ní
+        if (doby == 1.5f || doby == 3f) {
+            val yTecky = if (poz % 2 == 0) y - r.mezera / 2f else y
+            drawCircle(barva, r.mezera * 0.17f, Offset(x + rx + r.mezera * 0.45f, yTecky))
+        }
         if (doby < 4f) {
             val nahoru = poz < 4
             val sx = if (nahoru) x + rx - 2f else x - rx + 2f

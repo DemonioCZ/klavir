@@ -32,6 +32,8 @@ data class Profil(
     fun lekceOdemcena(lekce: Lekce): Boolean {
         val i = Lekce1az5.vsechny.indexOf(lekce)
         if (i <= 0) return true
+        // lekce, kterou už žák hrál, zůstane otevřená, i když se před ni později vloží nová
+        if ((hvezdyLekci[lekce.id] ?: 0) > 0) return true
         return (hvezdyLekci[Lekce1az5.vsechny[i - 1].id] ?: 0) > 0
     }
 

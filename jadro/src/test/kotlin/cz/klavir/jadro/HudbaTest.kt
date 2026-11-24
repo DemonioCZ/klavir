@@ -82,6 +82,23 @@ class HudbaTest {
             jmena(Pisnicky.pecNamSpadla),
         )
         assertTrue(jmena(Pisnicky.kockaLeze).startsWith("C D E F G G A A G A A G F F F F E E D D G"))
+        assertEquals("E E F G G E F F D D G G E E", jmena(Pisnicky.travickaZelena).split(" ").take(14).joinToString(" "))
+        assertEquals("C E C E G G G C E C E D D D", jmena(Pisnicky.beziLiska).split(" ").take(14).joinToString(" "))
+        assertEquals("G A G G E G F F D F G G E F", jmena(Pisnicky.holkaModrooka).split(" ").take(14).joinToString(" "))
+        assertEquals("E E E G A G G F D F E", jmena(Pisnicky.kdybyBylBavorov).split(" ").take(11).joinToString(" "))
+    }
+
+    @Test
+    fun slovaSeCtouCela() {
+        val slova = Pisnicky.skakalPes.noty.map { it.slovo }.filter { it.isNotEmpty() }
+        assertEquals(listOf("Skákal", "pes", "přes", "oves", "přes", "zelenou", "louku"), slova.take(7))
+        // slovo přes taktovou čáru
+        assertTrue("klobouku" in slova)
+        assertTrue("k Táboru" in Pisnicky.beziLiska.noty.map { it.slovo })
+        for (p in Pisnicky.vsechny) {
+            assertTrue(p.noty.none { it.slabika.endsWith("-") }, "${p.nazev}: pomlčka ve slabice")
+            assertEquals("", p.noty.last().slovo.takeIf { p.noty.last().slabika.isEmpty() } ?: "", p.nazev)
+        }
     }
 
     @Test
@@ -92,7 +109,7 @@ class HudbaTest {
             l.notyVOsnove.let { noty -> l.ukoly.forEach { u -> assertTrue(noty.isEmpty() || u.cil in noty) } }
         }
         // V lekcích C D E a F G začíná každá nota aspoň třemi opakováními za sebou.
-        for (l in listOf(Lekce1az5.cde, Lekce1az5.fg)) {
+        for (l in listOf(Lekce1az5.cde, Lekce1az5.fg, Lekce1az5.ah)) {
             assertEquals(List(3) { l.ukoly[0].cil }, l.ukoly.take(3).map { it.cil })
         }
     }

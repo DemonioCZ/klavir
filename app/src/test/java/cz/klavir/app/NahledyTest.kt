@@ -70,6 +70,7 @@ class NahledyTest {
     @Test fun lekcePrstiky() = obrazovka { s -> ObrazovkaLekce(s, "prstiky") {} }
     @Test fun lekceCde() = obrazovka { s -> ObrazovkaLekce(s, "cde") {} }
     @Test fun lekceFg() = obrazovka { s -> ObrazovkaLekce(s, "fg") {} }
+    @Test fun lekceAh() = obrazovka { s -> ObrazovkaLekce(s, "ah") {} }
     @Test fun lekceNoty() = obrazovka { s -> ObrazovkaLekce(s, "noty_klavesy") {} }
     @Test fun pisnicka() = obrazovka { s -> ObrazovkaPisnicka(s, "skakal_pes") {} }
     @Test fun pisnickaKocka() = obrazovka { s -> ObrazovkaPisnicka(s, "kocka_leze") {} }
