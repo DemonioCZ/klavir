@@ -236,10 +236,10 @@ private fun VelkaSekce(
     barva: Color, modifier: Modifier, onClick: () -> Unit,
 ) {
     Column(
-        modifier.height(330.dp).karta().clickable(onClick = onClick).padding(28.dp),
+        modifier.height(380.dp).karta().clickable(onClick = onClick).padding(horizontal = 28.dp, vertical = 22.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(ikona, style = styl(80))
+        Text(ikona, style = styl(64))
         Text(nazev, style = styl(44, barva = barva))
         Text(popis, style = styl(22, tucne = false, barva = Barvy.tlumeny))
         Spacer(Modifier.weight(1f))
