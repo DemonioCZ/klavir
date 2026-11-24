@@ -198,74 +198,23 @@ fun ObrazovkaDomu(stav: AppStav) {
             Pilulka("⭐ ${p.hvezdyCelkem}")
             Pilulka("🎵 ${p.body} bodů")
         }
-        Spacer(Modifier.height(18.dp))
-        Text("Lekce", style = styl(26))
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            Lekce1az5.vsechny.forEach { l ->
-                val hvezdy = p.hvezdyLekci[l.id] ?: 0
-                val odemcena = p.lekceOdemcena(l)
-                val aktualni = l == dalsiLekce
-                Column(
-                    Modifier
-                        .size(228.dp, 186.dp)
-                        .alpha(if (odemcena) 1f else 0.5f)
-                        .then(if (aktualni) Modifier.border(5.dp, Barvy.modra, RoundedCornerShape(28.dp)) else Modifier)
-                        .karta()
-                        .clickable(enabled = odemcena) { stav.jdi(Obrazovka.Lekce(l.id)) }
-                        .padding(horizontal = 18.dp, vertical = 14.dp),
-                ) {
-                    Text(l.obrazek, style = styl(42))
-                    Text("Lekce ${l.cislo}", style = styl(18, tucne = false, barva = Barvy.tlumeny))
-                    Text(l.nazev, style = styl(23))
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        when {
-                            !odemcena -> "🔒"
-                            hvezdy > 0 -> "⭐".repeat(hvezdy)
-                            aktualni -> "▶ teď hraješ"
-                            else -> "nová!"
-                        },
-                        style = styl(20, barva = if (aktualni && hvezdy == 0) Barvy.modra else Barvy.text),
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(14.dp))
-        Text("Písničky", style = styl(26))
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            Pisnicky.vsechny.forEach { s ->
-                val odemcena = p.pisnickaOdemcena(s)
-                val hvezdy = p.hvezdyPisnicek[s.id] ?: 0
-                Row(
-                    Modifier
-                        .size(290.dp, 150.dp)
-                        .alpha(if (odemcena) 1f else 0.5f)
-                        .karta()
-                        .clickable(enabled = odemcena) { stav.jdi(Obrazovka.Pisnicka(s.id)) }
-                        .padding(horizontal = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    Text(s.obrazek, style = styl(60))
-                    Column {
-                        Text(s.nazev, style = styl(25))
-                        Text(
-                            when {
-                                !odemcena -> "🔒 za ${s.potrebaHvezd} ⭐"
-                                hvezdy > 0 -> "⭐".repeat(hvezdy)
-                                else -> "nová!"
-                            },
-                            style = styl(20, tucne = hvezdy > 0, barva = if (hvezdy > 0) Barvy.text else Barvy.tlumeny),
-                        )
-                    }
-                }
-            }
+        Spacer(Modifier.height(24.dp))
+        // dvě velké sekce: Učení (lekce) a Písničky
+        val hotoveLekce = Lekce1az5.vsechny.count { (p.hvezdyLekci[it.id] ?: 0) > 0 }
+        val odemcenePisnicky = Pisnicky.vsechny.count { p.pisnickaOdemcena(it) }
+        val zahranePisnicky = Pisnicky.vsechny.count { (p.hvezdyPisnicek[it.id] ?: 0) > 0 }
+        val novaPisnicka = Pisnicky.vsechny.any { p.pisnickaOdemcena(it) && (p.hvezdyPisnicek[it.id] ?: 0) == 0 }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            VelkaSekce(
+                "📚", "Učení", "Prstíky, klávesy a noty",
+                "Hotovo $hotoveLekce z ${Lekce1az5.vsechny.size} lekcí",
+                dalsiLekce?.let { "▶ teď: ${it.nazev}" }, Barvy.modra, Modifier.weight(1f),
+            ) { stav.jdi(Obrazovka.Uceni) }
+            VelkaSekce(
+                "🎵", "Písničky", "Lidové písničky podle not",
+                "Zahráno $zahranePisnicky z ${Pisnicky.vsechny.size}, odemčeno $odemcenePisnicky",
+                if (novaPisnicka) "nová písnička čeká!" else null, Barvy.zelena, Modifier.weight(1f),
+            ) { stav.jdi(Obrazovka.SeznamPisnicek) }
         }
         Spacer(Modifier.height(20.dp))
         Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -279,6 +228,111 @@ fun ObrazovkaDomu(stav: AppStav) {
 }
 
 private fun dny(n: Int) = when (n) { 1 -> "den"; in 2..4 -> "dny"; else -> "dní" }
+
+/** Velké tlačítko sekce na domovské stránce. */
+@Composable
+private fun VelkaSekce(
+    ikona: String, nazev: String, popis: String, stavText: String, zvyrazneni: String?,
+    barva: Color, modifier: Modifier, onClick: () -> Unit,
+) {
+    Column(
+        modifier.height(330.dp).karta().clickable(onClick = onClick).padding(28.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(ikona, style = styl(80))
+        Text(nazev, style = styl(44, barva = barva))
+        Text(popis, style = styl(22, tucne = false, barva = Barvy.tlumeny))
+        Spacer(Modifier.weight(1f))
+        Text(stavText, style = styl(22))
+        zvyrazneni?.let { Text(it, style = styl(22, barva = barva)) }
+    }
+}
+
+// ───────────────────────── Učení a Písničky ─────────────────────────
+
+/** Mřížka karet po [vRadku] vedle sebe. */
+@Composable
+private fun <T> Mrizka(polozky: List<T>, vRadku: Int, karta: @Composable (T, Modifier) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        polozky.chunked(vRadku).forEach { radek ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                radek.forEach { karta(it, Modifier.weight(1f)) }
+                repeat(vRadku - radek.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+@Composable
+fun ObrazovkaUceni(stav: AppStav) {
+    val p = stav.aktivni ?: return
+    val dalsiLekce = Lekce1az5.vsechny.firstOrNull { (p.hvezdyLekci[it.id] ?: 0) == 0 && p.lekceOdemcena(it) }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 20.dp)) {
+        HorniLista("📚 Učení", onZpet = { stav.zpet() }) { Pilulka("⭐ ${p.hvezdyCelkem}") }
+        Spacer(Modifier.height(16.dp))
+        Mrizka(Lekce1az5.vsechny, 4) { l, mod ->
+            val hvezdy = p.hvezdyLekci[l.id] ?: 0
+            val odemcena = p.lekceOdemcena(l)
+            val aktualni = l == dalsiLekce
+            Column(
+                mod
+                    .height(200.dp)
+                    .alpha(if (odemcena) 1f else 0.5f)
+                    .then(if (aktualni) Modifier.border(5.dp, Barvy.modra, RoundedCornerShape(28.dp)) else Modifier)
+                    .karta()
+                    .clickable(enabled = odemcena) { stav.jdi(Obrazovka.Lekce(l.id)) }
+                    .padding(horizontal = 18.dp, vertical = 14.dp),
+            ) {
+                Text(l.obrazek, style = styl(42))
+                Text("Lekce ${l.cislo}", style = styl(18, tucne = false, barva = Barvy.tlumeny))
+                Text(l.nazev, style = styl(23))
+                Spacer(Modifier.weight(1f))
+                Text(
+                    when {
+                        !odemcena -> "🔒"
+                        hvezdy > 0 -> "⭐".repeat(hvezdy)
+                        aktualni -> "▶ teď hraješ"
+                        else -> "nová!"
+                    },
+                    style = styl(20, barva = if (aktualni && hvezdy == 0) Barvy.modra else Barvy.text),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ObrazovkaPisnicky(stav: AppStav) {
+    val p = stav.aktivni ?: return
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 20.dp)) {
+        HorniLista("🎵 Písničky", onZpet = { stav.zpet() }) { Pilulka("⭐ ${p.hvezdyCelkem}") }
+        Spacer(Modifier.height(16.dp))
+        Mrizka(Pisnicky.vsechny, 4) { s, mod ->
+            val odemcena = p.pisnickaOdemcena(s)
+            val hvezdy = p.hvezdyPisnicek[s.id] ?: 0
+            Column(
+                mod
+                    .height(200.dp)
+                    .alpha(if (odemcena) 1f else 0.5f)
+                    .karta()
+                    .clickable(enabled = odemcena) { stav.jdi(Obrazovka.Pisnicka(s.id)) }
+                    .padding(horizontal = 18.dp, vertical = 14.dp),
+            ) {
+                Text(s.obrazek, style = styl(48))
+                Text(s.nazev, style = styl(24))
+                Spacer(Modifier.weight(1f))
+                Text(
+                    when {
+                        !odemcena -> "🔒 za ${s.potrebaHvezd} ⭐"
+                        hvezdy > 0 -> "⭐".repeat(hvezdy)
+                        else -> "nová!"
+                    },
+                    style = styl(20, tucne = hvezdy > 0, barva = if (hvezdy > 0) Barvy.text else Barvy.tlumeny),
+                )
+            }
+        }
+    }
+}
 
 // ───────────────────────── Výsledek ─────────────────────────
 

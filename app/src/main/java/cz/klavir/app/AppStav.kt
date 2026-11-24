@@ -28,6 +28,8 @@ sealed interface Obrazovka {
         val znovu: Obrazovka,
         val dalsi: Obrazovka?,
     ) : Obrazovka
+    data object Uceni : Obrazovka
+    data object SeznamPisnicek : Obrazovka
     data object Odznaky : Obrazovka
     data object ProRodice : Obrazovka
 }

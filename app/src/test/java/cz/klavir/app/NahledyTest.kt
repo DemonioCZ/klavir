@@ -11,6 +11,8 @@ import com.android.resources.Density
 import com.android.resources.ScreenOrientation
 import cz.klavir.app.ui.Barvy
 import cz.klavir.app.ui.ObrazovkaDomu
+import cz.klavir.app.ui.ObrazovkaPisnicky
+import cz.klavir.app.ui.ObrazovkaUceni
 import cz.klavir.app.ui.ObrazovkaLekce
 import cz.klavir.app.ui.ObrazovkaOdznaky
 import cz.klavir.app.ui.ObrazovkaPisnicka
@@ -67,6 +69,8 @@ class NahledyTest {
 
     @Test fun profily() = obrazovka { s -> ObrazovkaProfily(s) }
     @Test fun domu() = obrazovka { s -> ObrazovkaDomu(s) }
+    @Test fun uceni() = obrazovka { s -> ObrazovkaUceni(s) }
+    @Test fun seznamPisnicek() = obrazovka { s -> ObrazovkaPisnicky(s) }
     @Test fun lekcePrstiky() = obrazovka { s -> ObrazovkaLekce(s, "prstiky") {} }
     @Test fun lekceCde() = obrazovka { s -> ObrazovkaLekce(s, "cde") {} }
     @Test fun lekceFg() = obrazovka { s -> ObrazovkaLekce(s, "fg") {} }

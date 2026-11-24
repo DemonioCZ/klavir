@@ -25,6 +25,8 @@ import cz.klavir.app.ui.Barvy
 import cz.klavir.app.ui.ObrazovkaDomu
 import cz.klavir.app.ui.ObrazovkaLekce
 import cz.klavir.app.ui.ObrazovkaOdznaky
+import cz.klavir.app.ui.ObrazovkaPisnicky
+import cz.klavir.app.ui.ObrazovkaUceni
 import cz.klavir.app.ui.ObrazovkaPisnicka
 import cz.klavir.app.ui.ObrazovkaProRodice
 import cz.klavir.app.ui.ObrazovkaProfily
@@ -92,6 +94,8 @@ fun KlavirApp(stav: AppStav, pozadatOMikrofon: () -> Unit, onKonec: () -> Unit) 
             is Obrazovka.Lekce -> ObrazovkaLekce(stav, obr.id, pozadatOMikrofon)
             is Obrazovka.Pisnicka -> ObrazovkaPisnicka(stav, obr.id, pozadatOMikrofon)
             is Obrazovka.Vysledek -> ObrazovkaVysledek(stav, obr)
+            Obrazovka.Uceni -> ObrazovkaUceni(stav)
+            Obrazovka.SeznamPisnicek -> ObrazovkaPisnicky(stav)
             Obrazovka.Odznaky -> ObrazovkaOdznaky(stav)
             Obrazovka.ProRodice -> ObrazovkaProRodice(stav)
         }
